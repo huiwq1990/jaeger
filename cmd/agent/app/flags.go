@@ -60,6 +60,7 @@ func AddFlags(flags *flag.FlagSet) {
 
 // InitFromViper initializes Builder with properties retrieved from Viper.
 func (b *Builder) InitFromViper(v *viper.Viper) *Builder {
+	// 采集默认支持的服务器
 	for _, processor := range defaultProcessors {
 		prefix := fmt.Sprintf("processor.%s-%s.", processor.model, processor.protocol)
 		p := &ProcessorConfiguration{Model: processor.model, Protocol: processor.protocol}
@@ -70,6 +71,7 @@ func (b *Builder) InitFromViper(v *viper.Viper) *Builder {
 		b.Processors = append(b.Processors, *p)
 	}
 
+	// 用于配置agent参数
 	b.HTTPServer.HostPort = v.GetString(httpServerHostPort)
 	return b
 }

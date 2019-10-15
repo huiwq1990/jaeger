@@ -48,6 +48,7 @@ func main() {
 		Short: "Jaeger agent is a local daemon program which collects tracing data.",
 		Long:  `Jaeger agent is a daemon program that runs on every host and receives tracing data submitted by Jaeger client libraries.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// adminhttp
 			if err := svc.Start(v); err != nil {
 				return err
 			}
@@ -56,6 +57,7 @@ func main() {
 				Namespace(metrics.NSOptions{Name: "jaeger"}).
 				Namespace(metrics.NSOptions{Name: "agent"})
 
+			// agent上报collector服务的client构建，目前支持GRPC、TCHANNEL
 			rOpts := new(reporter.Options).InitFromViper(v)
 			tchanBuilder := tchannel.NewBuilder().InitFromViper(v, logger)
 			grpcBuilder := grpc.NewConnBuilder().InitFromViper(v)
@@ -66,12 +68,13 @@ func main() {
 
 			// TODO illustrate discovery service wiring
 
+			// 构建agent processor收集数据
 			builder := new(app.Builder).InitFromViper(v)
 			agent, err := builder.CreateAgent(cp, logger, mFactory)
 			if err != nil {
 				return errors.Wrap(err, "unable to initialize Jaeger Agent")
 			}
-
+			// 启动所有的服务
 			logger.Info("Starting agent")
 			if err := agent.Run(); err != nil {
 				return errors.Wrap(err, "failed to run the agent")

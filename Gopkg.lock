@@ -60,7 +60,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:f563c51359f64bc448d47183c7a3959f4e76c3bfc7dd040e2dfa84ec124c38fe"
+  digest = "1:96246b12102d5ac8be0a6418b285532b07b7196cf79defe626dcdce31e4bc4f4"
   name = "github.com/apache/thrift"
   packages = ["lib/go/thrift"]
   pruneopts = "UT"
@@ -417,7 +417,7 @@
   version = "v1.7.1"
 
 [[projects]]
-  digest = "1:f053e09da1c565313cbe0f999af92a690b1e1f5709dfb9aca4dcf70cb89f3cec"
+  digest = "1:c7c5bb9d61da61e858a56497598cf4df8f1b862f1a542a23ce9fe137a4b82a95"
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
   packages = [
     ".",
@@ -609,7 +609,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ae08d850ba158ea3ba4a7bb90f8372608172d8920644e5a6693b940a1f4e5d01"
+  digest = "1:9bd49029ee236c8dd31258e72bebaebc2d29c347b2f814eea2b898035fa5d1e9"
   name = "github.com/mmcloughlin/avo"
   packages = [
     "attr",

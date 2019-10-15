@@ -48,7 +48,7 @@ type ThriftProcessor struct {
 type AgentProcessor interface {
 	Process(iprot, oprot thrift.TProtocol) (success bool, err thrift.TException)
 }
-
+// 提供多协程 和 缓存的能力
 // NewThriftProcessor creates a TBufferedServer backed ThriftProcessor
 func NewThriftProcessor(
 	server servers.Server,
@@ -86,7 +86,7 @@ func NewThriftProcessor(
 	}
 	return res, nil
 }
-
+// 调用bufferthriftserver
 // Serve starts serving traffic
 func (s *ThriftProcessor) Serve() {
 	s.server.Serve()
@@ -114,12 +114,14 @@ func (s *ThriftProcessor) processBuffer() {
 		payload := readBuf.GetBytes()
 		protocol.Transport().Write(payload)
 		s.logger.Debug("Span(s) received by the agent", zap.Int("bytes-received", len(payload)))
-
+		// 这个handler是Builder.getProcessors构建
+		// 最后调用Reporter.EmitBatch，跟thrift协议绑定
 		if ok, err := s.handler.Process(protocol, protocol); !ok {
 			s.logger.Error("Processor failed", zap.Error(err))
 			s.metrics.HandlerProcessError.Inc(1)
 		}
 		s.protocolPool.Put(protocol)
+		// 释放buffer
 		s.server.DataRecd(readBuf) // acknowledge receipt and release the buffer
 	}
 }

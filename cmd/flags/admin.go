@@ -34,7 +34,7 @@ const (
 	adminHTTPPort       = "admin-http-port"
 	healthCheckHTTPPort = "health-check-http-port"
 )
-
+// 管理服务，提供健康检查功能、pprof
 // AdminServer runs an HTTP server with admin endpoints, such as healthcheck at /, /metrics, etc.
 type AdminServer struct {
 	logger    *zap.Logger

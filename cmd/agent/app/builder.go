@@ -107,11 +107,14 @@ func (b *Builder) WithReporter(r ...reporter.Reporter) *Builder {
 
 // CreateAgent creates the Agent
 func (b *Builder) CreateAgent(primaryProxy CollectorProxy, logger *zap.Logger, mFactory metrics.Factory) (*Agent, error) {
+	// 获取collector的reporter，processor用于进行上报
 	r := b.getReporter(primaryProxy)
+	// 重点分析，启动udp的thrift服务
 	processors, err := b.getProcessors(r, mFactory, logger)
 	if err != nil {
 		return nil, err
 	}
+	// 创建http服务器，重点分析
 	server := b.HTTPServer.getHTTPServer(primaryProxy.GetManager(), mFactory)
 	return NewAgent(processors, server, logger), nil
 }
@@ -127,7 +130,6 @@ func (b *Builder) getReporter(primaryProxy CollectorProxy) reporter.Reporter {
 	}
 	return reporter.NewMultiReporter(rep...)
 }
-
 func (b *Builder) getProcessors(rep reporter.Reporter, mFactory metrics.Factory, logger *zap.Logger) ([]processors.Processor, error) {
 	retMe := make([]processors.Processor, len(b.Processors))
 	for idx, cfg := range b.Processors {
@@ -135,6 +137,8 @@ func (b *Builder) getProcessors(rep reporter.Reporter, mFactory metrics.Factory,
 		if !ok {
 			return nil, fmt.Errorf("cannot find protocol factory for protocol %v", cfg.Protocol)
 		}
+		// reporter继承agent类，所以reporter是作为服务端处理的方法
+		// agentProcessor继承thrift的tprocessor
 		var handler processors.AgentProcessor
 		switch cfg.Model {
 		case jaegerModel:
@@ -148,6 +152,7 @@ func (b *Builder) getProcessors(rep reporter.Reporter, mFactory metrics.Factory,
 			"protocol": string(cfg.Protocol),
 			"model":    string(cfg.Model),
 		}})
+		// 获取thriftserver（不是原生的thriftserver）,server外面被包装buffer
 		processor, err := cfg.GetThriftProcessor(metrics, protoFactory, handler, logger)
 		if err != nil {
 			return nil, err
@@ -174,6 +179,8 @@ func (c *ProcessorConfiguration) GetThriftProcessor(
 ) (processors.Processor, error) {
 	c.applyDefaults()
 
+	// 创建udp的thriftserver，底层是udpthriftserver，外面被buffer包装
+	// udpserver接受原始的流量，并将数据保存到channel
 	server, err := c.Server.getUDPServer(mFactory)
 	if err != nil {
 		return nil, err
@@ -190,7 +197,7 @@ func (c *ServerConfiguration) applyDefaults() {
 	c.QueueSize = defaultInt(c.QueueSize, defaultQueueSize)
 	c.MaxPacketSize = defaultInt(c.MaxPacketSize, defaultMaxPacketSize)
 }
-
+// 需要思考udpserver怎么跟bufferedServer进行结合的？？
 // getUDPServer gets a TBufferedServer backed server using the server configuration
 func (c *ServerConfiguration) getUDPServer(mFactory metrics.Factory) (servers.Server, error) {
 	c.applyDefaults()
@@ -198,11 +205,11 @@ func (c *ServerConfiguration) getUDPServer(mFactory metrics.Factory) (servers.Se
 	if c.HostPort == "" {
 		return nil, fmt.Errorf("no host:port provided for udp server: %+v", *c)
 	}
+	// udp底层服务端，connect已经打开
 	transport, err := thriftudp.NewTUDPServerTransport(c.HostPort)
 	if err != nil {
 		return nil, err
 	}
-
 	return servers.NewTBufferedServer(transport, c.QueueSize, c.MaxPacketSize, mFactory)
 }
 

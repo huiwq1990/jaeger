@@ -108,7 +108,7 @@ func (s *Service) Start(v *viper.Viper) error {
 		return errors.Wrap(err, "cannot create metrics factory")
 	}
 	s.MetricsFactory = metricsFactory
-
+	// 启动adminhttp服务
 	s.Admin.initFromViper(v, s.Logger)
 	if h := metricsBuilder.Handler(); h != nil {
 		route := metricsBuilder.HTTPRoute
@@ -126,7 +126,7 @@ func (s *Service) Start(v *viper.Viper) error {
 func (s *Service) HC() *healthcheck.HealthCheck {
 	return s.Admin.HC()
 }
-
+// 协程一直阻塞，知道收到SIGTERM信号
 // RunAndThen sets the health check to Ready and blocks until SIGTERM is received.
 // If then runs the shutdown function and exits.
 func (s *Service) RunAndThen(shutdown func()) {

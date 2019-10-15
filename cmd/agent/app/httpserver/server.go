@@ -33,7 +33,9 @@ const mimeTypeApplicationJSON = "application/json"
 var (
 	errBadRequest = errors.New("bad request")
 )
-
+// 提供查询采样策略及速率限制的接口
+// http://localhost:5778/?service=frontend
+//http://localhost:5778/baggageRestrictions?service=frontend
 // NewHTTPServer creates a new server that hosts an HTTP/JSON endpoint for clients
 // to query for sampling strategies and baggage restrictions.
 func NewHTTPServer(hostPort string, manager configmanager.ClientConfigManager, mFactory metrics.Factory) *http.Server {
@@ -101,7 +103,7 @@ func (h *httpHandler) writeJSON(w http.ResponseWriter, json []byte) error {
 	}
 	return nil
 }
-
+// 需要传递url变量：service
 func (h *httpHandler) serveSamplingHTTP(w http.ResponseWriter, r *http.Request, thriftEnums092 bool) {
 	service, err := h.serviceFromRequest(w, r)
 	if err != nil {

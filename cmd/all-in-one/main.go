@@ -195,7 +195,7 @@ func startAgent(
 	if err != nil {
 		logger.Fatal("Unable to initialize Jaeger Agent", zap.Error(err))
 	}
-
+	// agent真正启动，启动collector，http
 	logger.Info("Starting agent")
 	if err := agent.Run(); err != nil {
 		logger.Fatal("Failed to run the agent", zap.Error(err))

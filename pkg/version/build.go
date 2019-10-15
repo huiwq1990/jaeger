@@ -14,6 +14,7 @@
 
 package version
 
+// 通过makefile中的ldflagers动态设置值 https://segmentfault.com/a/1190000008323048
 var (
 	// commitFromGit is a constant representing the source version that
 	// generated this build. It should be set during build via -ldflags.

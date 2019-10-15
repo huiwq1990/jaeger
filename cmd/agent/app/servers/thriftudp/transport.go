@@ -66,7 +66,7 @@ func createClient(destAddr, locAddr *net.UDPAddr) (*TUDPTransport, error) {
 	}
 	return &TUDPTransport{addr: destAddr, conn: conn}, nil
 }
-
+// 监听udp端口，注意这里的serverconnection已经打开
 // NewTUDPServerTransport creates a net.UDPConn-backed TTransport for Thrift servers
 // It will listen for incoming udp packets on the specified host/port
 // Example:
@@ -111,7 +111,7 @@ func (p *TUDPTransport) Close() error {
 func (p *TUDPTransport) Addr() net.Addr {
 	return p.addr
 }
-
+// 从原声的connection中读取数据
 // Read reads one UDP packet and puts it in the specified buf
 func (p *TUDPTransport) Read(buf []byte) (int, error) {
 	if !p.IsOpen() {

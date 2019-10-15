@@ -77,17 +77,19 @@ func NewTBufferedServer(
 	metrics.Init(&res.metrics, mFactory, nil)
 	return res, nil
 }
-
+// server方法在cmd/agent/app/agent.go:61被调用
 // Serve initiates the readers and starts serving traffic
 func (s *TBufferedServer) Serve() {
 	atomic.StoreUint32(&s.serving, 1)
 	for s.IsServing() {
 		readBuf := s.readBufPool.Get().(*ReadBuf)
+		// 直接从connection中获取数据，TUDPTransport.read，这里跟thrift的协议没有关系
 		n, err := s.transport.Read(readBuf.bytes)
 		if err == nil {
 			readBuf.n = n
 			s.metrics.PacketSize.Update(int64(n))
 			select {
+			// 将数据放入channel，channel在ThriftProcessor.processBuffer中处理。
 			case s.dataChan <- readBuf:
 				s.metrics.PacketsProcessed.Inc(1)
 				s.updateQueueSize(1)
