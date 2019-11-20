@@ -58,9 +58,9 @@ var AllStorageTypes = []string{cassandraStorageType, elasticsearchStorageType, m
 type Factory struct {
 	FactoryConfig
 	metricsFactory metrics.Factory
-	factories      map[string]storage.Factory
+	factories      map[string]storage.Factory	// 默认的存储支持
 }
-
+// 设置所支持的存储类型
 // NewFactory creates the meta-factory.
 func NewFactory(config FactoryConfig) (*Factory, error) {
 	f := &Factory{FactoryConfig: config}
@@ -71,6 +71,7 @@ func NewFactory(config FactoryConfig) (*Factory, error) {
 	for _, storageType := range f.SpanWriterTypes {
 		uniqueTypes[storageType] = struct{}{}
 	}
+	// 设置存储支持
 	f.factories = make(map[string]storage.Factory)
 	for t := range uniqueTypes {
 		ff, err := f.getFactoryOfType(t)

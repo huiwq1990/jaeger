@@ -109,9 +109,12 @@ func NewAPIHandler(queryService *querysvc.QueryService, options ...HandlerOption
 
 // RegisterRoutes registers routes for this handler on the given router
 func (aH *APIHandler) RegisterRoutes(router *mux.Router) {
+	// 根据ID查询trace信息
 	aH.handleFunc(router, aH.getTrace, "/traces/{%s}", traceIDParam).Methods(http.MethodGet)
 	aH.handleFunc(router, aH.archiveTrace, "/archive/{%s}", traceIDParam).Methods(http.MethodPost)
+	// 条件搜索
 	aH.handleFunc(router, aH.search, "/traces").Methods(http.MethodGet)
+	// 服务列表
 	aH.handleFunc(router, aH.getServices, "/services").Methods(http.MethodGet)
 	// TODO change the UI to use this endpoint. Requires ?service= parameter.
 	aH.handleFunc(router, aH.getOperations, "/operations").Methods(http.MethodGet)
@@ -140,7 +143,7 @@ func (aH *APIHandler) route(route string, args ...interface{}) string {
 	args = append([]interface{}{aH.apiPrefix}, args...)
 	return fmt.Sprintf("/%s"+route, args...)
 }
-
+// 查询所有服务
 func (aH *APIHandler) getServices(w http.ResponseWriter, r *http.Request) {
 	services, err := aH.queryService.GetServices(r.Context())
 	if aH.handleError(w, err, http.StatusInternalServerError) {
@@ -194,6 +197,7 @@ func (aH *APIHandler) search(w http.ResponseWriter, r *http.Request) {
 
 	var uiErrors []structuredError
 	var tracesFromStorage []*model.Trace
+	// 支持查询多个traceId 或者 按照条件搜索
 	if len(tQuery.traceIDs) > 0 {
 		tracesFromStorage, uiErrors, err = aH.tracesByIDs(r.Context(), tQuery.traceIDs)
 		if aH.handleError(w, err, http.StatusInternalServerError) {

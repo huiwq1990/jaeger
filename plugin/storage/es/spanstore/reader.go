@@ -272,14 +272,15 @@ func bucketToStringArray(buckets []*elastic.AggregationBucketKeyItem) ([]string,
 func (s *SpanReader) FindTraces(ctx context.Context, traceQuery *spanstore.TraceQueryParameters) ([]*model.Trace, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "FindTraces")
 	defer span.Finish()
-
+	// 查询符合条件的traceId
 	uniqueTraceIDs, err := s.FindTraceIDs(ctx, traceQuery)
 	if err != nil {
 		return nil, err
 	}
+	// 根据Id查询
 	return s.multiRead(ctx, uniqueTraceIDs, traceQuery.StartTimeMin, traceQuery.StartTimeMax)
 }
-
+// 根据查询条件过滤span，然后聚合traceId
 // FindTraceIDs retrieves traces IDs that match the traceQuery
 func (s *SpanReader) FindTraceIDs(ctx context.Context, traceQuery *spanstore.TraceQueryParameters) ([]model.TraceID, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "FindTraceIDs")

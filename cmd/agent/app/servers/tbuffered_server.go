@@ -93,6 +93,7 @@ func (s *TBufferedServer) Serve() {
 			case s.dataChan <- readBuf:
 				s.metrics.PacketsProcessed.Inc(1)
 				s.updateQueueSize(1)
+			// 数据处理不及时丢弃
 			default:
 				s.metrics.PacketsDropped.Inc(1)
 			}

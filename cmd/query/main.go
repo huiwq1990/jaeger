@@ -44,7 +44,7 @@ import (
 )
 
 func main() {
-	svc := flags.NewService(ports.QueryAdminHTTP)
+	svc := flags.NewService(ports.QueryAdminHTTP) // 健康检查
 
 	storageFactory, err := storage.NewFactory(storage.FactoryConfigFromEnvAndCLI(os.Args, os.Stderr))
 	if err != nil {
@@ -101,7 +101,7 @@ func main() {
 				spanReader,
 				dependencyReader,
 				*queryServiceOptions)
-
+			// 创建http服务
 			server := app.NewServer(svc, queryService, queryOpts, tracer)
 
 			if err := server.Start(); err != nil {
@@ -123,6 +123,7 @@ func main() {
 		v,
 		command,
 		svc.AddFlags,
+		// 设置存储的参数支持
 		storageFactory.AddFlags,
 		app.AddFlags,
 	)

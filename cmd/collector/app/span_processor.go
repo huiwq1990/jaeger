@@ -146,7 +146,7 @@ func (sp *spanProcessor) processItemFromQueue(item *queueItem) {
 	sp.processSpan(sp.sanitizer(item.span))
 	sp.metrics.InQueueLatency.Record(time.Since(item.queuedTime))
 }
-
+// 从队列拿数据
 func (sp *spanProcessor) enqueueSpan(span *model.Span, originalFormat SpanFormat, transport InboundTransport) bool {
 	spanCounts := sp.metrics.GetCountsForFormat(originalFormat, transport)
 	spanCounts.ReceivedBySvc.ReportServiceNameForSpan(span)

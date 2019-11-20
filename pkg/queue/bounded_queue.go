@@ -48,7 +48,7 @@ func NewBoundedQueue(capacity int, onDroppedItem func(item interface{})) *Bounde
 		stopCh:        make(chan struct{}),
 	}
 }
-
+// 启动协程池
 // StartConsumers starts a given number of goroutines consuming items from the queue
 // and passing them into the consumer callback.
 func (q *BoundedQueue) StartConsumers(num int, consumer func(item interface{})) {

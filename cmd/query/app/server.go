@@ -77,7 +77,7 @@ func createHTTPServer(querySvc *querysvc.QueryService, queryOpts *QueryOptions, 
 	if queryOpts.BasePath != "/" {
 		r = r.PathPrefix(queryOpts.BasePath).Subrouter()
 	}
-
+	// 注册路由处理，支持trace查询、service查询等
 	apiHandler.RegisterRoutes(r)
 	RegisterStaticHandler(r, logger, queryOpts)
 	var handler http.Handler = r
