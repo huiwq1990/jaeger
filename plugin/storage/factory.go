@@ -130,6 +130,7 @@ func (f *Factory) CreateSpanWriter() (spanstore.Writer, error) {
 		if !ok {
 			return nil, fmt.Errorf("no %s backend registered for span store", storageType)
 		}
+		// 调用具体的存储实现
 		writer, err := factory.CreateSpanWriter()
 		if err != nil {
 			return nil, err

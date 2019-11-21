@@ -176,7 +176,7 @@ func createSpanWriter(
 			return nil, err
 		}
 	}
-
+	// 获取span service的模板文件
 	spanMapping, serviceMapping := GetMappings(cfg.GetNumShards(), cfg.GetNumReplicas(), client.GetVersion())
 	writer := esSpanStore.NewSpanWriter(esSpanStore.SpanWriterParams{
 		Client:              client,
@@ -189,6 +189,7 @@ func createSpanWriter(
 		Archive:             archive,
 		UseReadWriteAliases: cfg.GetUseReadWriteAliases(),
 	})
+	// 判断是否需要创建索引模板，默认是true
 	if cfg.IsCreateIndexTemplates() {
 		err := writer.CreateTemplates(spanMapping, serviceMapping)
 		if err != nil {
@@ -197,7 +198,7 @@ func createSpanWriter(
 	}
 	return writer, nil
 }
-
+// 根据ES版本区分
 // GetMappings returns span and service mappings
 func GetMappings(shards, replicas int64, esVersion uint) (string, string) {
 	if esVersion == 7 {
@@ -207,7 +208,7 @@ func GetMappings(shards, replicas int64, esVersion uint) (string, string) {
 	return fixMapping(loadMapping("/jaeger-span.json"), shards, replicas),
 		fixMapping(loadMapping("/jaeger-service.json"), shards, replicas)
 }
-
+// 读取mapping文件，使用esc生成的
 func loadMapping(name string) string {
 	s, _ := mappings.FSString(false, name)
 	return s

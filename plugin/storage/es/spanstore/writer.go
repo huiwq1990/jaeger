@@ -89,7 +89,7 @@ func NewSpanWriter(p SpanWriterParams) *SpanWriter {
 		spanServiceIndex: getSpanAndServiceIndexFn(p.Archive, p.UseReadWriteAliases, p.IndexPrefix),
 	}
 }
-
+// 创建jaeger-span的模板
 // CreateTemplates creates index templates.
 func (s *SpanWriter) CreateTemplates(spanTemplate, serviceTemplate string) error {
 	_, err := s.client.CreateTemplate("jaeger-span").Body(spanTemplate).Do(context.Background())
