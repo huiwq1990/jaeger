@@ -120,6 +120,7 @@ func (aH *APIHandler) RegisterRoutes(router *mux.Router) {
 	aH.handleFunc(router, aH.getOperations, "/operations").Methods(http.MethodGet)
 	// TODO - remove this when UI catches up
 	aH.handleFunc(router, aH.getOperationsLegacy, "/services/{%s}/operations", serviceParam).Methods(http.MethodGet)
+	// 处理依赖图谱
 	aH.handleFunc(router, aH.dependencies, "/dependencies").Methods(http.MethodGet)
 }
 
@@ -244,7 +245,7 @@ func (aH *APIHandler) tracesByIDs(ctx context.Context, traceIDs []model.TraceID)
 	}
 	return retMe, errors, nil
 }
-
+// 请求示例URL　http://localhost:16686/api/dependencies?endTs=1574408925476&lookback=604800000
 func (aH *APIHandler) dependencies(w http.ResponseWriter, r *http.Request) {
 	endTsMillis, err := strconv.ParseInt(r.FormValue(endTsParam), 10, 64)
 	if aH.handleError(w, errors.Wrapf(err, "unable to parse %s", endTimeParam), http.StatusBadRequest) {
@@ -263,13 +264,14 @@ func (aH *APIHandler) dependencies(w http.ResponseWriter, r *http.Request) {
 		lookback = defaultDependencyLookbackDuration
 	}
 	endTs := time.Unix(0, 0).Add(time.Duration(endTsMillis) * time.Millisecond)
-
+	// 查询指定范围内的依赖关系
 	dependencies, err := aH.queryService.GetDependencies(endTs, lookback)
 	if aH.handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
-
+	// 如果用户传入服务名，根据服务名过滤依赖
 	filteredDependencies := aH.filterDependenciesByService(dependencies, service)
+	// 以parent和child为key，聚合数据
 	structuredRes := structuredResponse{
 		Data: aH.deduplicateDependencies(filteredDependencies),
 	}
