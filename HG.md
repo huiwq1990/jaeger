@@ -26,5 +26,7 @@ set GOPROXY="https://goproxy.io"
 go mod vendor
 
 
+### agent调试
 
+设置collector的地址
 --reporter.tchannel.host-port 116.196.85.112:14267
