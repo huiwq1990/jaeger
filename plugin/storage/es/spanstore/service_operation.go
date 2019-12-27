@@ -62,6 +62,7 @@ func NewServiceOperationStorage(
 	}
 }
 
+// 写入servicename，operationname，如果缓存已经写入，则不会重新写入。
 // Write saves a service to operation pair.
 func (s *ServiceOperationStorage) Write(indexName string, jsonSpan *dbmodel.Span) {
 	// Insert serviceName:operationName document
@@ -70,6 +71,7 @@ func (s *ServiceOperationStorage) Write(indexName string, jsonSpan *dbmodel.Span
 		OperationName: jsonSpan.OperationName,
 	}
 
+	// 判断缓存中是否已经存在servicename opertaionName
 	cacheKey := hashCode(service)
 	if !keyInCache(cacheKey, s.serviceCache) {
 		s.client.Index().Index(indexName).Type(serviceType).Id(cacheKey).BodyJson(service).Add()

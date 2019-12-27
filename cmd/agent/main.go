@@ -58,6 +58,7 @@ func main() {
 				Namespace(metrics.NSOptions{Name: "agent"})
 
 			// agent上报collector服务的client构建，目前支持GRPC、TCHANNEL
+			// 不同的reporter类型有不同的builder
 			rOpts := new(reporter.Options).InitFromViper(v)
 			tchanBuilder := tchannel.NewBuilder().InitFromViper(v, logger)
 			grpcBuilder := grpc.NewConnBuilder().InitFromViper(v)
@@ -68,8 +69,10 @@ func main() {
 
 			// TODO illustrate discovery service wiring
 
+			// 构建agent自身的服务，http thrift服务
 			// 构建agent processor收集数据
 			builder := new(app.Builder).InitFromViper(v)
+			// 构建httpserver的路由及监听端口 thrift的processor构建
 			agent, err := builder.CreateAgent(cp, logger, mFactory)
 			if err != nil {
 				return errors.Wrap(err, "unable to initialize Jaeger Agent")

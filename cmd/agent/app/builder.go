@@ -114,7 +114,7 @@ func (b *Builder) CreateAgent(primaryProxy CollectorProxy, logger *zap.Logger, m
 	if err != nil {
 		return nil, err
 	}
-	// 创建http服务器，重点分析
+	// 创建http服务器，默认监听5778，重点分析
 	server := b.HTTPServer.getHTTPServer(primaryProxy.GetManager(), mFactory)
 	return NewAgent(processors, server, logger), nil
 }
@@ -161,7 +161,7 @@ func (b *Builder) getProcessors(rep reporter.Reporter, mFactory metrics.Factory,
 	}
 	return retMe, nil
 }
-
+// 设置监听端口及url路由
 // GetHTTPServer creates an HTTP server that provides sampling strategies and baggage restrictions to client libraries.
 func (c HTTPServerConfiguration) getHTTPServer(manager configmanager.ClientConfigManager, mFactory metrics.Factory) *http.Server {
 	if c.HostPort == "" {

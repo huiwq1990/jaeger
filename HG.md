@@ -30,3 +30,19 @@ go mod vendor
 
 设置collector的地址
 --reporter.tchannel.host-port 116.196.85.112:14267
+
+
+
+
+### collector 调试
+环境变量
+CGO_ENABLED=0
+SPAN_STORAGE_TYPE=memory
+应用参数
+--collector.zipkin.http-port=9411
+
+
+GOOS=linux CGO_ENABLED=0 installsuffix=cgo go build -tags ui -o ./cmd/all-in-one/all-in-one  ./cmd/all-in-one/main.go
+
+
+nohup ./jaeger-agent --reporter.tchannel.host-port localhost:14267 &

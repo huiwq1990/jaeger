@@ -47,6 +47,7 @@ func NewCollectorProxy(builder *ConnBuilder, agentTags map[string]string, mFacto
 		conn:     conn,
 		// 将reporter进行aop，提供监控能力
 		reporter: reporter.WrapWithMetrics(NewReporter(conn, agentTags, logger), grpcMetrics),
+		// manager管理每个服务的采集器
 		manager:  configmanager.WrapWithMetrics(grpcManager.NewConfigManager(conn), grpcMetrics),
 	}, nil
 }

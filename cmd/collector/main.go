@@ -119,6 +119,7 @@ func main() {
 				batchHandler := app.NewTChannelHandler(jaegerBatchesHandler, zipkinSpansHandler)
 				server.Register(jc.NewTChanCollectorServer(batchHandler))
 				server.Register(zc.NewTChanZipkinCollectorServer(batchHandler))
+				// 采样率管理器
 				server.Register(sc.NewTChanSamplingManagerServer(sampling.NewHandler(strategyStore)))
 				portStr := ":" + strconv.Itoa(builderOpts.CollectorPort)
 				listener, err := net.Listen("tcp", portStr)
@@ -128,22 +129,24 @@ func main() {
 				logger.Info("Starting jaeger-collector TChannel server", zap.Int("port", builderOpts.CollectorPort))
 				ch.Serve(listener)
 			}
-
+			// grpc server ,默认端口14250
 			server, err := startGRPCServer(builderOpts, grpcHandler, strategyStore, logger)
 			if err != nil {
 				logger.Fatal("Could not start gRPC collector", zap.Error(err))
 			}
 
 			{
+				// 注册http路由，数据格式为http
 				r := mux.NewRouter()
 				apiHandler := app.NewAPIHandler(jaegerBatchesHandler)
 				apiHandler.RegisterRoutes(r)
 				httpPortStr := ":" + strconv.Itoa(builderOpts.CollectorHTTPPort)
 				recoveryHandler := recoveryhandler.NewRecoveryHandler(logger, true)
 				httpHandler := recoveryHandler(r)
-
+				// 如果需要启动zipkin，需要设置zipkin_port
 				go startZipkinHTTPAPI(logger, builderOpts.CollectorZipkinHTTPPort, builderOpts.CollectorZipkinAllowedOrigins, builderOpts.CollectorZipkinAllowedHeaders, zipkinSpansHandler, recoveryHandler)
 
+				// 启动jaeger http收集器
 				logger.Info("Starting jaeger-collector HTTP server", zap.Int("http-port", builderOpts.CollectorHTTPPort))
 				go func() {
 					if err := http.ListenAndServe(httpPortStr, httpHandler); err != nil {
@@ -184,7 +187,7 @@ func main() {
 		os.Exit(1)
 	}
 }
-
+// 启动采样率管理等服务
 func startGRPCServer(
 	opts *builder.CollectorOptions,
 	handler *app.GRPCHandler,
@@ -207,6 +210,7 @@ func startGRPCServer(
 	} else { // server without TLS
 		server = grpc.NewServer()
 	}
+	// 仔细分析
 	_, err := grpcserver.StartGRPCCollector(opts.CollectorGRPCPort, server, handler, samplingStore, logger, func(err error) {
 		logger.Fatal("gRPC collector failed", zap.Error(err))
 	})
@@ -225,6 +229,7 @@ func startZipkinHTTPAPI(
 	recoveryHandler func(http.Handler) http.Handler,
 ) {
 	if zipkinPort != 0 {
+		// 注册zipkin的路由
 		zHandler := zipkin.NewAPIHandler(zipkinSpansHandler)
 		r := mux.NewRouter()
 		zHandler.RegisterRoutes(r)

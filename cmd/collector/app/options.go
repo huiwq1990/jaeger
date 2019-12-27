@@ -36,6 +36,7 @@ type options struct {
 	hostMetrics      metrics.Factory
 	preProcessSpans  ProcessSpans
 	sanitizer        sanitizer.SanitizeSpan
+	// span保存前的钩子
 	preSave          ProcessSpan
 	spanFilter       FilterSpan
 	numWorkers       int

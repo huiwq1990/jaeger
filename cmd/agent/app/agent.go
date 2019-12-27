@@ -59,6 +59,7 @@ func (a *Agent) GetServer() *http.Server {
 // It returns an error when it's immediately apparent on startup, but
 // any errors happening after starting the servers are only logged.
 func (a *Agent) Run() error {
+	// http server监听
 	listener, err := net.Listen("tcp", a.httpServer.Addr)
 	if err != nil {
 		return err
@@ -72,6 +73,7 @@ func (a *Agent) Run() error {
 		}
 		a.logger.Info("agent's http server exiting")
 	}()
+	// 启动thrift
 	for _, processor := range a.processors {
 		go processor.Serve()
 	}

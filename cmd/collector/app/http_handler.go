@@ -52,7 +52,7 @@ func NewAPIHandler(
 		jaegerBatchesHandler: jaegerBatchesHandler,
 	}
 }
-
+// http接收thrift数据
 // RegisterRoutes registers routes for this handler on the given router
 func (aH *APIHandler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/api/traces", aH.saveSpan).Methods(http.MethodPost)
@@ -72,7 +72,7 @@ func (aH *APIHandler) saveSpan(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Cannot parse content type: %v", err), http.StatusBadRequest)
 		return
 	}
-
+	// 目前只接收thrift格式数据
 	if _, ok := acceptedThriftFormats[contentType]; !ok {
 		http.Error(w, fmt.Sprintf("Unsupported content type: %v", contentType), http.StatusBadRequest)
 		return

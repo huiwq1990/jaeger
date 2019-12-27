@@ -64,11 +64,13 @@ func NewSpanProcessor(
 ) SpanProcessor {
 	sp := newSpanProcessor(spanWriter, opts...)
 
+	// 启动消费者，处理span
 	sp.queue.StartConsumers(sp.numWorkers, func(item interface{}) {
 		value := item.(*queueItem)
 		sp.processItemFromQueue(value)
 	})
 
+	// 定时上报queue的长度 jaeger_collector_queue_length
 	sp.queue.StartLengthReporting(1*time.Second, sp.metrics.QueueLength)
 
 	return sp
@@ -80,9 +82,11 @@ func newSpanProcessor(spanWriter spanstore.Writer, opts ...Option) *spanProcesso
 		options.serviceMetrics,
 		options.hostMetrics,
 		options.extraFormatTypes)
+	// 如果无法成功入队，记录丢弃数量
 	droppedItemHandler := func(item interface{}) {
 		handlerMetrics.SpansDropped.Inc(1)
 	}
+	//队列长度默认为：app.DefaultQueueSize
 	boundedQueue := queue.NewBoundedQueue(options.queueSize, droppedItemHandler)
 
 	sp := spanProcessor{
@@ -130,6 +134,7 @@ func (sp *spanProcessor) saveSpan(span *model.Span) {
 
 func (sp *spanProcessor) ProcessSpans(mSpans []*model.Span, options ProcessSpansOptions) ([]bool, error) {
 	sp.preProcessSpans(mSpans)
+	//jaeger_collector_batch_size
 	sp.metrics.BatchSize.Update(int64(len(mSpans)))
 	retMe := make([]bool, len(mSpans))
 	for i, mSpan := range mSpans {
@@ -146,9 +151,10 @@ func (sp *spanProcessor) processItemFromQueue(item *queueItem) {
 	sp.processSpan(sp.sanitizer(item.span))
 	sp.metrics.InQueueLatency.Record(time.Since(item.queuedTime))
 }
-// 从队列拿数据
+// 将Span放入队列
 func (sp *spanProcessor) enqueueSpan(span *model.Span, originalFormat SpanFormat, transport InboundTransport) bool {
 	spanCounts := sp.metrics.GetCountsForFormat(originalFormat, transport)
+	//jaeger_collector_spans_received_total
 	spanCounts.ReceivedBySvc.ReportServiceNameForSpan(span)
 
 	if !sp.filterSpan(span) {

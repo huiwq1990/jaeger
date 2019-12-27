@@ -36,6 +36,7 @@ import (
 
 // ConnBuilder Struct to hold configurations
 type ConnBuilder struct {
+	// JaegerCollector的地址
 	// CollectorHostPorts is list of host:port Jaeger Collectors.
 	CollectorHostPorts []string `yaml:"collectorHostPorts"`
 
@@ -108,7 +109,7 @@ func (b *ConnBuilder) CreateConnection(logger *zap.Logger) (*grpc.ClientConn, er
 		logger.Info("Agent requested insecure grpc connection to collector(s)")
 		dialOptions = append(dialOptions, grpc.WithInsecure())
 	}
-
+	// 通过发现模式发现服务器地址
 	if b.Notifier != nil && b.Discoverer != nil {
 		logger.Info("Using external discovery service with roundrobin load balancer")
 		grpcResolver := grpcresolver.New(b.Notifier, b.Discoverer, logger, b.DiscoveryMinPeers)

@@ -20,6 +20,7 @@ import (
 
 // StrategyStore keeps track of service specific sampling strategies.
 type StrategyStore interface {
+	//plugin/sampling/strategystore/adaptive/processor.go:154
 	// GetSamplingStrategy retrieves the sampling strategy for the specified service.
 	GetSamplingStrategy(serviceName string) (*sampling.SamplingStrategyResponse, error)
 }

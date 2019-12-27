@@ -65,6 +65,7 @@ func (c *LRU) Get(key string) interface{} {
 		return nil
 	}
 
+	// 被动删除
 	cacheEntry := elt.Value.(*cacheEntry)
 	if !cacheEntry.expiration.IsZero() && c.TimeNow().After(cacheEntry.expiration) {
 		// Entry has expired

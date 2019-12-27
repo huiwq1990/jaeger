@@ -154,9 +154,11 @@ func NewProcessor(
 func (p *processor) GetSamplingStrategy(service string) (*sampling.SamplingStrategyResponse, error) {
 	p.RLock()
 	defer p.RUnlock()
+	// 看看是否已经有缓存
 	if strategy, ok := p.strategyResponses[service]; ok {
 		return strategy, nil
 	}
+	// 获取默认值
 	return p.generateDefaultSamplingStrategyResponse(), nil
 }
 
@@ -165,7 +167,9 @@ func (p *processor) Start() error {
 	p.logger.Info("starting adaptive sampling processor")
 	p.shutdown = make(chan struct{})
 	p.loadProbabilities()
+	// 同步触发数据加载
 	p.generateStrategyResponses()
+	// 定时更新数据
 	go p.runCalculationLoop()
 	go p.runUpdateProbabilitiesLoop()
 	return nil
@@ -225,7 +229,7 @@ func addJitter(jitterAmount time.Duration) {
 	delay := (jitterAmount / 2) + time.Duration(rand.Int63n(int64(jitterAmount/2)))
 	time.Sleep(delay)
 }
-
+// 计算概率和qps
 func (p *processor) runCalculationLoop() {
 	lastCheckedTime := time.Now().Add(p.Delay * -1)
 	p.initializeThroughput(lastCheckedTime)
@@ -484,6 +488,7 @@ func (p *processor) isUsingAdaptiveSampling(
 func (p *processor) generateStrategyResponses() {
 	p.RLock()
 	strategies := make(map[string]*sampling.SamplingStrategyResponse)
+	// p.probabilities 保存最新的数据
 	for svc, opProbabilities := range p.probabilities {
 		opStrategies := make([]*sampling.OperationSamplingStrategy, len(opProbabilities))
 		var idx int

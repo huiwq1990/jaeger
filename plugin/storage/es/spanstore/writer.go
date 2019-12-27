@@ -78,6 +78,7 @@ func NewSpanWriter(p SpanWriterParams) *SpanWriter {
 		writerMetrics: spanWriterMetrics{
 			indexCreate: storageMetrics.NewWriteMetrics(p.MetricsFactory, "index_create"),
 		},
+		// 负责将servicename写入es
 		serviceWriter: serviceOperationStorage.Write,
 		indexCache: cache.NewLRUWithOptions(
 			5,
@@ -135,9 +136,11 @@ func getSpanAndServiceIndexFn(archive, useReadWriteAliases bool, prefix string) 
 func (s *SpanWriter) WriteSpan(span *model.Span) error {
 	spanIndexName, serviceIndexName := s.spanServiceIndex(span.StartTime)
 	jsonSpan := s.spanConverter.FromDomainEmbedProcess(span)
+	// 保存servicename,operationname
 	if serviceIndexName != "" {
 		s.writeService(serviceIndexName, jsonSpan)
 	}
+	//保存span数据
 	s.writeSpan(spanIndexName, jsonSpan)
 	return nil
 }

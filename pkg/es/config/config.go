@@ -107,7 +107,7 @@ func (c *Configuration) NewClient(logger *zap.Logger, metricsFactory metrics.Fac
 	if err != nil {
 		return nil, err
 	}
-
+	// 索引监控
 	sm := storageMetrics.NewWriteMetrics(metricsFactory, "bulk_index")
 	m := sync.Map{}
 

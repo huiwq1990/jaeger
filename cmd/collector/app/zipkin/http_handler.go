@@ -114,6 +114,7 @@ func (aH *APIHandler) saveSpans(w http.ResponseWriter, r *http.Request) {
 func (aH *APIHandler) saveSpansV2(w http.ResponseWriter, r *http.Request) {
 	bRead := r.Body
 	defer r.Body.Close()
+	// 支持gzip压缩
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 		gz, err := gunzip(bRead)
 		if err != nil {
@@ -136,7 +137,7 @@ func (aH *APIHandler) saveSpansV2(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Cannot parse Content-Type: %v", err), http.StatusBadRequest)
 		return
 	}
-
+	// 支持json和protobuf格式，将span进行转换，统一转为thrift格式
 	var tSpans []*zipkincore.Span
 	switch contentType {
 	case "application/json":

@@ -60,6 +60,8 @@ func newHTTPHandler(manager configmanager.ClientConfigManager, mFactory metrics.
 }
 
 type httpHandler struct {
+	//cmd/agent/app/configmanager/grpc/manager.go:NewConfigManager
+	//
 	manager configmanager.ClientConfigManager
 	metrics struct {
 		// Number of good sampling requests
@@ -103,12 +105,16 @@ func (h *httpHandler) writeJSON(w http.ResponseWriter, json []byte) error {
 	}
 	return nil
 }
-// 需要传递url变量：service
+// thriftEnums092时老版本的数据结构
+// http://localhost:port/sampling?service=xxxx` 需要传递url变量：service
 func (h *httpHandler) serveSamplingHTTP(w http.ResponseWriter, r *http.Request, thriftEnums092 bool) {
+	//从url获取service名称
 	service, err := h.serviceFromRequest(w, r)
 	if err != nil {
 		return
 	}
+	// 采样率配置具体实现，深入分析
+	// h.manager configmanager.ClientConfigManager
 	resp, err := h.manager.GetSamplingStrategy(service)
 	if err != nil {
 		h.metrics.CollectorProxyFailures.Inc(1)
